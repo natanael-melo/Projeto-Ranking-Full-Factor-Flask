@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
+    <title>Meu Ranking</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="p-3 m-0 border-0 bd-example m-0 border-0">
+
+  <form method="POST"  action="/">
+    <!-- Seus campos de entrada e seleção aqui -->
+    <!-- Pesos, Filtro e Ordenação -->
+    <div class="d-flex gap-2 justify-content-center py-2">
+      <!-- Peso Momentum-->
+      <div class="mb-3">
+        <label for="form-label">Peso Momentum</label>
+        <input type="number" class="form-control" name="peso_momentum" placeholder="2" value="{{ momentum }}"  min="0">
+      </div>
+        <!-- form-floating 
+        <div class="form-floating mb-3">
+          <input type="number" class="form-control" id="floatingInput" name="peso_momentum" placeholder="" value="{{ momentum }}"  min="0">
+          <label for="floatingInput">Peso Momentum</label>
+        </div>
+      -->
+      
+
+      <!-- Peso Low Risk-->
+      <div class="mb-3">
+        <label for="form-label">Peso Low Risk</label>
+        <input type="number" class="form-control" name="peso_low_risk" placeholder="1" value="{{ low_risk }}"  min="0">
+      </div>
+      <!-- form-floating 
+        <div class="form-floating mb-3">
+          <input type="number" class="form-control" id="floatingInput" name="peso_low_risk" placeholder="" value="{{ low_risk }}"  min="0">
+          <label for="floatingInput">Peso Low Risk</label>
+        </div>
+      -->
+
+      <!-- Peso Magic Formula-->
+      <div class="mb-3">
+        <label for="form-label">Peso Magic Formula</label>
+        <input type="number" class="form-control" name="peso_magic_formula" placeholder="1" value="{{ magic_formula }}"  min="0">
+      </div>
+      <!-- form-floating 
+        <div class="form-floating mb-3">
+          <input type="number" class="form-control" id="floatingInput" name="peso_magic_formula" placeholder="" value="{{ magic_formula }}"  min="0">
+          <label for="floatingInput">Peso Magic Formula</label>
+        </div>
+      -->
+
+      <!-- Filtro Nome Ativo-->
+      <div class="mb-3">
+        <label for="form-label">Ativo</label>
+        <input type="text" class="form-control" name="peso_ativo" placeholder="Ex: PETR4" value="{{ filtro_ativo }}" >
+      </div>
+      <!-- form-floating 
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="floatingInput" name="peso_ativo" placeholder="Ex: PETR4" value="{{ filtro_ativo }}" >
+          <label for="floatingInput">Ativo</label>
+        </div>
+      -->
+
+      <!-- Ordernar por-->
+      <div class="mb-3">
+        <label for="form-label">Ordernar por:</label>
+        <select class="form-select" name='ordenacao' aria-label="Floating label select example">
+          <option value="0" {% if ordenacao == 0 %}selected{% endif %}>Melhor Posição</option>
+          <option value="1" {% if ordenacao == 1 %}selected{% endif %}>Melhor Momentum</option>
+          <option value="2" {% if ordenacao == 2 %}selected{% endif %}>Melhor Low Risk</option>
+          <option value="3" {% if ordenacao == 3 %}selected{% endif %}>Melhor Magic Formula</option>
+        </select>
+      </div>
+      <!-- form-floating 
+        <div class="form-floating mb-3">
+          <select class="form-select" id="floatingSelect" name='ordenacao' aria-label="Floating label select example">
+            <option value="0" {% if ordenacao == 0 %}selected{% endif %}>Melhor Posição</option>
+            <option value="1" {% if ordenacao == 1 %}selected{% endif %}>Melhor Momentum</option>
+            <option value="2" {% if ordenacao == 2 %}selected{% endif %}>Melhor Low Risk</option>
+           <option value="3" {% if ordenacao == 3 %}selected{% endif %}>Melhor Magic Formula</option>
+          </select>
+          <label for="floatingSelect">Ordernar por:</label>
+        </div>
+      -->
+    </div>
+  </form>
+
+  <!-- Dados da Tabela-->
+  <div class="container mt-0 w-75">
+      <div id="table-container" class="table-responsive">
+        {{ table | safe }}
+    </div>
+  </div>
+    
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Inicializa as variáveis com os valores iniciais dos campos
+      var lastMomentum = document.getElementsByName('peso_momentum')[0].value;
+      var lastLowRisk = document.getElementsByName('peso_low_risk')[0].value;
+      var lastMagicFormula = document.getElementsByName('peso_magic_formula')[0].value;
+    
+      function updateTable() {
+        // Cria um objeto com os dados dos campos de entrada
+        var data = {
+          'momentum': lastMomentum,
+          'low_risk': lastLowRisk,
+          'magic_formula': lastMagicFormula,
+          'filtro_ativo': document.getElementsByName('peso_ativo')[0].value,
+          'ordenacao': document.getElementsByName('ordenacao')[0].value
+        };
+    
+        // Envia uma requisição POST para o servidor
+        fetch('/update_table', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+          // Atualiza o HTML da tabela
+          document.getElementById('table-container').innerHTML = data.html_table;
+        });
+      }
+    
+      // Função para atualizar as variáveis com os valores dos campos
+      function updateValues() {
+        lastMomentum = document.getElementsByName('peso_momentum')[0].value;
+        lastLowRisk = document.getElementsByName('peso_low_risk')[0].value;
+        lastMagicFormula = document.getElementsByName('peso_magic_formula')[0].value;
+        updateTable();
+      }
+    
+      // Adiciona o evento 'change' aos campos, atualizando os valores e a tabela
+      document.getElementsByName('peso_momentum')[0].addEventListener('change', updateValues);
+      document.getElementsByName('peso_low_risk')[0].addEventListener('change', updateValues);
+      document.getElementsByName('peso_magic_formula')[0].addEventListener('change', updateValues);
+      document.getElementsByName('ordenacao')[0].addEventListener('change', updateTable);
+    
+      // Adiciona o evento 'input' ao campo de filtro de ativo para atualizar a tabela
+      document.getElementsByName('peso_ativo')[0].addEventListener('input', updateTable);
+    });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>
